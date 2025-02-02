@@ -1,0 +1,5 @@
+# Bloquear acesso a arquivos específicos
+<FilesMatch "\.(sql|ini|env|sh|bat|cmd)$">
+    Require all denied
+</FilesMatch>
+

@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost"; // Nome do servidor
-$username = "root"; // Nome de usuário do MySQL
-$password = ""; // Senha do MySQL
-$dbname = "teste_sistema"; // Nome do banco de dados
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "teste_sistema";
 
 // Criar conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -11,4 +11,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Conexão falhou: " . $conn->connect_error);
 }
+
+// Configurações de segurança adicionais
+$conn->set_charset("utf8mb4");
 ?>

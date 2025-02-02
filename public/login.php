@@ -1,5 +1,6 @@
 <?php
-include 'conexao.php';
+// No início de cada arquivo PHP na pasta public
+include '../includes/conexao.php';
 
 session_start();
 $login_err = '';
