@@ -22,6 +22,3 @@ endlocal
 
 rem If we're in the Node.js directory, change to the user's home dir.
 if "%CD%\"=="%~dp0" cd /d "%HOMEDRIVE%%HOMEPATH%"
-
-C:\Users\juarez_philipi\TesteSistemas\SELENIUM
-node automacao_formulario.js

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS formulario(
     ,document VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE IF NOT EXISTS usuario(
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_completo VARCHAR(255) NOT NULL,
     nome_usuario VARCHAR(255) NOT NULL UNIQUE,
