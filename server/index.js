@@ -1,18 +1,29 @@
+//#region Biblioteca: express - APIs
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Certifique-se de que o cors está importado aqui
 const db = require('./db');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const cors = require('cors');
-const bcrypt = require('bcrypt');
 
 const app = express();
 const port = 3000;
 
+// Configurações de middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(session({
+    secret: 'seuSegredoAqui',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Use 'true' se estiver usando HTTPS
+}));
+//#endregion
 
+//#region Biblioteca: multer - upload de arquivos;
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -43,48 +54,16 @@ const upload = multer({
         }
     }
 });
+//#endregion
 
-// Função para criptografar a senha
+//#region Função de Criptografia
 function passwordHash(senha) {
     const saltRounds = 10;
     return bcrypt.hashSync(senha, saltRounds);
 }
+//#endregion
 
-/*
- * GET para as tabelas 
- * 
-*/
-
-app.get('/forumlarios', (req,res) => {
-    const sql = 'SELECT * FOM formulario';
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Erro ao obter Formulários:', err);
-            res.status(500).json({ erro: 'Erro ao obter Formulários' });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-// esse vai retornar os usuários totais.
-app.get('/registros', (req, res) => {
-    const sql = 'SELECT * FROM usuario';
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Erro ao obter Usuários:', err);
-            res.status(500).json({ erro: 'Erro ao obter Usuários' });
-            return;
-        }
-        res.json(results);
-    });
-});
-
-/*
- * POST para as tabelas 
- * 
-*/
-
+//#region Rotas - POST
 app.post('/registro', (req, res) => {
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
@@ -102,7 +81,7 @@ app.post('/registro', (req, res) => {
 
 app.post('/formulario', upload.single('document'), (req, res) => {
     const { nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem } = req.body;
-    const document = req.file.path;
+    const document = req.file ? req.file.path : null; // Verifica se o arquivo foi enviado
 
     const sql = 'INSERT INTO formulario (nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sql, [nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document], (err, results) => {
@@ -115,6 +94,53 @@ app.post('/formulario', upload.single('document'), (req, res) => {
     });
 });
 
+app.post('/login', async (req, res) => {
+    const { nome_usuario, senha } = req.body;
+    const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
+    db.query(sql, [nome_usuario], async (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar usuário:', err);
+            res.status(500).json({ erro: 'Erro ao buscar usuário' });
+            return;
+        }
+        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
+            req.session.user = results[0];
+            res.json({ mensagem: 'Login efetuado com sucesso!' });
+        } else {
+            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
+        }
+    });
+});
+//#endregion
+
+//#region Rotas - GET
+app.get('/formularios', (req, res) => {
+    const sql = 'SELECT * FROM formulario';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Erro ao obter Formulários:', err);
+            res.status(500).json({ erro: 'Erro ao obter Formulários' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+app.get('/registros', (req, res) => {
+    const sql = 'SELECT * FROM usuario';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Erro ao obter Usuários:', err);
+            res.status(500).json({ erro: 'Erro ao obter Usuários' });
+            return;
+        }
+        res.json(results);
+    });
+});
+//#endregion
+
+//#region Inicialização do Servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
+//#endregion
