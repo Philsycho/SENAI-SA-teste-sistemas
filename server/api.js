@@ -1,18 +1,16 @@
-//#region Biblioteca: express - APIs
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Certifique-se de que o cors está importado aqui
-const db = require('./db');
+const cors = require('cors');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const db = require('./db');
 
 const app = express();
 const port = 3000;
 
-// Configurações de middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(session({
@@ -21,9 +19,19 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // Use 'true' se estiver usando HTTPS
 }));
-//#endregion
 
-//#region Biblioteca: multer - upload de arquivos;
+// Middleware de Verificação de Sessão
+function verificarSessao(req, res, next) {
+    if (req.session.user) {
+        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado.`); // Log do usuário autenticado
+        next();
+    } else {
+        console.log('Usuário não autenticado.'); // Log de usuário não autenticado
+        res.status(401).json({ erro: 'Usuário não autenticado' });
+    }
+}
+
+// Configuração do Multer para upload de arquivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -33,12 +41,12 @@ const storage = multer.diskStorage({
         const base = path.basename(file.originalname, ext);
         let filename = `${base}${ext}`;
         let counter = 1;
-        
+
         while (fs.existsSync(`uploads/${filename}`)) {
             filename = `${base}(${counter})${ext}`;
             counter++;
         }
-        
+
         cb(null, filename);
     }
 });
@@ -54,16 +62,14 @@ const upload = multer({
         }
     }
 });
-//#endregion
 
-//#region Função de Criptografia
+// Função de Criptografia
 function passwordHash(senha) {
     const saltRounds = 10;
     return bcrypt.hashSync(senha, saltRounds);
 }
-//#endregion
 
-//#region Rotas - POST
+// Rotas POST
 app.post('/registro', (req, res) => {
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
@@ -105,16 +111,17 @@ app.post('/login', async (req, res) => {
         }
         if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
             req.session.user = results[0];
+            console.log(`Usuário ${nome_usuario} fez login com sucesso.`); // Log de login bem-sucedido
             res.json({ mensagem: 'Login efetuado com sucesso!' });
         } else {
+            console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`); // Log de tentativa de login falhada
             res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
         }
     });
 });
-//#endregion
 
-//#region Rotas - GET
-app.get('/formularios', (req, res) => {
+// Rotas GET
+app.get('/formularios', verificarSessao, (req, res) => {
     const sql = 'SELECT * FROM formulario';
     db.query(sql, (err, results) => {
         if (err) {
@@ -137,10 +144,18 @@ app.get('/registros', (req, res) => {
         res.json(results);
     });
 });
-//#endregion
 
-//#region Inicialização do Servidor
+app.get('/verificar-sessao', (req, res) => {
+    if (req.session.user) {
+        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
+        res.status(200).json({ mensagem: 'Usuário autenticado' });
+    } else {
+        console.log('Usuário não autenticado na verificação de sessão.'); // Log de verificação de sessão falhada
+        res.status(401).json({ erro: 'Usuário não autenticado' });
+    }
+});
+
+// Inicialização do Servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
 });
-//#endregion
