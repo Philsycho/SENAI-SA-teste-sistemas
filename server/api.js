@@ -71,6 +71,7 @@ function passwordHash(senha) {
 
 // Rotas POST
 app.post('/registro', (req, res) => {
+    console.log('Rota /registro acessada.'); // Log para verificação da rota
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
 
@@ -86,6 +87,7 @@ app.post('/registro', (req, res) => {
 });
 
 app.post('/formulario', upload.single('document'), (req, res) => {
+    console.log('Rota /formulario acessada.'); // Log para verificação da rota
     const { nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem } = req.body;
     const document = req.file ? req.file.path : null; // Verifica se o arquivo foi enviado
 
@@ -101,6 +103,7 @@ app.post('/formulario', upload.single('document'), (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+    console.log('Rota \'/login\' acessada.'); // Log para verificação da rota
     const { nome_usuario, senha } = req.body;
     const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
     db.query(sql, [nome_usuario], async (err, results) => {
@@ -121,7 +124,9 @@ app.post('/login', async (req, res) => {
 });
 
 // Rotas GET
-app.get('/formularios', verificarSessao, (req, res) => {
+//app.get('/formularios', verificarSessao, (req, res) => {
+app.get('/formularios',  (req, res) => {
+    console.log('Rota /formularios acessada.'); // Log para verificação da rota
     const sql = 'SELECT * FROM formulario';
     db.query(sql, (err, results) => {
         if (err) {
@@ -134,6 +139,7 @@ app.get('/formularios', verificarSessao, (req, res) => {
 });
 
 app.get('/registros', (req, res) => {
+    console.log('Rota /registros acessada.'); // Log para verificação da rota
     const sql = 'SELECT * FROM usuario';
     db.query(sql, (err, results) => {
         if (err) {
@@ -146,6 +152,7 @@ app.get('/registros', (req, res) => {
 });
 
 app.get('/verificar-sessao', (req, res) => {
+    console.log('Rota \'/verificar-sessao\' acessada.'); // Log para verificação da rota
     if (req.session.user) {
         console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
         res.status(200).json({ mensagem: 'Usuário autenticado' });
