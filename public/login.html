@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
@@ -17,7 +16,8 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include' // Inclui cookies nas requisições
             });
 
             const result = await response.json();
@@ -31,7 +31,6 @@
         }
     </script>
 </head>
-
 <body>
     <h1>Login</h1>
     <form onsubmit="loginUsuario(event)">
@@ -44,5 +43,4 @@
         <input type="submit" value="Entrar">
     </form>
 </body>
-
 </html>
