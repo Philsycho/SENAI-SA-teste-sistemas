@@ -8,7 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script>
     async function verificarSessao() {
-        const response = await fetch('http://localhost:3000/verificar-sessao');
+        const response = await fetch('http://localhost:3000/verificar-sessao', {
+            credentials: 'include' // Inclui cookies nas requisições
+        });
         if (!response.ok) {
             alert('Você precisa estar logado para acessar esta página.');
             window.location.href = 'login.html';
@@ -20,7 +22,9 @@
     });
 
     async function carregarFormularios() {
-        const response = await fetch('http://localhost:3000/formularios');
+        const response = await fetch('http://localhost:3000/formularios', {
+            credentials: 'include' // Inclui cookies nas requisições
+        });
         const formularios = await response.json();
         
         const tabelaFormularios = document.getElementById('tabela-formularios');
@@ -81,7 +85,6 @@
             tabelaFormularios.appendChild(tr);
         });
     }
-    
     </script>
 </head>
 <body>

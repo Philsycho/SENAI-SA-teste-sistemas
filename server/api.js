@@ -11,13 +11,25 @@ const db = require('./db');
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// Determinar se está em ambiente de produção ou desenvolvimento
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configurar CORS para permitir a origem http://127.0.0.1:5500
+app.use(cors({
+    origin: 'http://127.0.0.1:5500', // Permitir a origem do frontend
+    credentials: true // Permite o envio de cookies
+}));
+
 app.use(bodyParser.json());
 app.use(session({
     secret: 'seuSegredoAqui',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Use 'true' se estiver usando HTTPS
+    cookie: {
+        secure: isProduction, // Usar 'true' se estiver em ambiente de produção (HTTPS)
+        httpOnly: true, // Assegura que o cookie é transmitido apenas sobre HTTP(S), não acessível via JavaScript
+        maxAge: 24 * 60 * 60 * 1000 // Configura o tempo de expiração do cookie (24 horas)
+    }
 }));
 
 // Middleware de Verificação de Sessão
@@ -103,7 +115,7 @@ app.post('/formulario', upload.single('document'), (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    console.log('Rota \'/login\' acessada.'); // Log para verificação da rota
+    console.log('Rota /login acessada.'); // Log para verificação da rota
     const { nome_usuario, senha } = req.body;
     const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
     db.query(sql, [nome_usuario], async (err, results) => {
@@ -124,8 +136,7 @@ app.post('/login', async (req, res) => {
 });
 
 // Rotas GET
-//app.get('/formularios', verificarSessao, (req, res) => {
-app.get('/formularios',  (req, res) => {
+app.get('/formularios', verificarSessao, (req, res) => {
     console.log('Rota /formularios acessada.'); // Log para verificação da rota
     const sql = 'SELECT * FROM formulario';
     db.query(sql, (err, results) => {
@@ -138,7 +149,7 @@ app.get('/formularios',  (req, res) => {
     });
 });
 
-app.get('/registros', (req, res) => {
+app.get('/registros', verificarSessao, (req, res) => {
     console.log('Rota /registros acessada.'); // Log para verificação da rota
     const sql = 'SELECT * FROM usuario';
     db.query(sql, (err, results) => {
@@ -152,7 +163,7 @@ app.get('/registros', (req, res) => {
 });
 
 app.get('/verificar-sessao', (req, res) => {
-    console.log('Rota \'/verificar-sessao\' acessada.'); // Log para verificação da rota
+    console.log('Rota /verificar-sessao acessada.'); // Log para verificação da rota
     if (req.session.user) {
         console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
         res.status(200).json({ mensagem: 'Usuário autenticado' });
