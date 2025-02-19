@@ -35,10 +35,10 @@ app.use(session({
 // Middleware de Verificação de Sessão
 function verificarSessao(req, res, next) {
     if (req.session.user) {
-        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado.`); // Log do usuário autenticado
+        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado.`);
         next();
     } else {
-        console.log('Usuário não autenticado.'); // Log de usuário não autenticado
+        console.log('Usuário não autenticado.');
         res.status(401).json({ erro: 'Usuário não autenticado' });
     }
 }
@@ -83,7 +83,7 @@ function passwordHash(senha) {
 
 // Rotas POST
 app.post('/registro', (req, res) => {
-    console.log('Rota /registro acessada.'); // Log para verificação da rota
+    console.log('Rota /registro acessada.');
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
 
@@ -114,7 +114,29 @@ app.post('/formulario', upload.single('document'), (req, res) => {
     });
 });
 
+// Rota de Login
 app.post('/login', async (req, res) => {
+    console.log('Rota /login acessada.');
+    const { nome_usuario, senha } = req.body;
+    const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
+    db.query(sql, [nome_usuario], async (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar usuário:', err);
+            res.status(500).json({ erro: 'Erro ao buscar usuário' });
+            return;
+        }
+        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
+            req.session.user = results[0];
+            console.log(`Usuário ${nome_usuario} fez login com sucesso.`);
+            res.json({ mensagem: 'Login efetuado com sucesso!' });
+        } else {
+            console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`);
+            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
+        }
+    });
+});
+
+/*app.post('/login', async (req, res) => {
     console.log('Rota /login acessada.'); // Log para verificação da rota
     const { nome_usuario, senha } = req.body;
     const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
@@ -133,7 +155,7 @@ app.post('/login', async (req, res) => {
             res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
         }
     });
-});
+});*/
 
 // Rotas GET
 app.get('/formularios', verificarSessao, (req, res) => {
@@ -149,6 +171,17 @@ app.get('/formularios', verificarSessao, (req, res) => {
     });
 });
 
+app.get('/verificar-sessao', (req, res) => {
+    console.log('Rota /verificar-sessao acessada.');
+    if (req.session.user) {
+        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`);
+        res.status(200).json({ mensagem: 'Usuário autenticado' });
+    } else {
+        console.log('Usuário não autenticado na verificação de sessão.');
+        res.status(401).json({ erro: 'Usuário não autenticado' });
+    }
+});
+
 app.get('/registros', verificarSessao, (req, res) => {
     console.log('Rota /registros acessada.'); // Log para verificação da rota
     const sql = 'SELECT * FROM usuario';
@@ -162,7 +195,19 @@ app.get('/registros', verificarSessao, (req, res) => {
     });
 });
 
+// Rota para verificar a sessão do usuário
 app.get('/verificar-sessao', (req, res) => {
+    console.log('Rota /verificar-sessao acessada.');
+    if (req.session.user) {
+        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`);
+        res.status(200).json({ mensagem: 'Usuário autenticado' });
+    } else {
+        console.log('Usuário não autenticado na verificação de sessão.');
+        res.status(401).json({ erro: 'Usuário não autenticado' });
+    }
+});
+
+/*app.get('/verificar-sessao', (req, res) => {
     console.log('Rota /verificar-sessao acessada.'); // Log para verificação da rota
     if (req.session.user) {
         console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
@@ -171,7 +216,7 @@ app.get('/verificar-sessao', (req, res) => {
         console.log('Usuário não autenticado na verificação de sessão.'); // Log de verificação de sessão falhada
         res.status(401).json({ erro: 'Usuário não autenticado' });
     }
-});
+});*/
 
 // Inicialização do Servidor
 app.listen(port, () => {
