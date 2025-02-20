@@ -7,109 +7,112 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script>
-        async function verificarSessao() {
-            const response = await fetch('http://127.0.0.1:3000/verificar-sessao', {
-                credentials: 'include' // Inclui cookies nas requisições
-            });
-            if (!response.ok) {
-                alert('Você precisa estar logado para acessar esta página.');
-                window.location.href = 'login.html';
-            }
-        }
-    
-        document.addEventListener("DOMContentLoaded", function() {
-            verificarSessao().then(() => carregarFormularios());
+    async function verificarSessao() {
+        const response = await fetch('http://127.0.0.1:3000/verificar-sessao', {
+            credentials: 'include' // Inclui cookies nas requisições
         });
-    
-        async function carregarFormularios() {
-            const response = await fetch('http://127.0.0.1:3000/formularios', {
-                credentials: 'include' // Inclui cookies nas requisições
-            });
-            const formularios = await response.json();
-            
-            const tabelaFormularios = document.getElementById('tabela-formularios');
-            tabelaFormularios.innerHTML = ''; // Limpa a tabela antes de preenchê-la
-            
-            formularios.forEach(formulario => {
-                const tr = document.createElement('tr');
-                
-                // Preenchimento das colunas da tabela
-                const tdNomeCompleto = document.createElement('td');
-                tdNomeCompleto.textContent = formulario.nome_completo;
-                tr.appendChild(tdNomeCompleto);
-                
-                const tdTelefone = document.createElement('td');
-                tdTelefone.textContent = formulario.telefone;
-                tr.appendChild(tdTelefone);
-                
-                const tdEmail = document.createElement('td');
-                tdEmail.textContent = formulario.email;
-                tr.appendChild(tdEmail);
-                
-                const tdCpfCnpj = document.createElement('td');
-                tdCpfCnpj.textContent = formulario.cpfcnpj;
-                tr.appendChild(tdCpfCnpj);
-                
-                const tdEndereco = document.createElement('td');
-                tdEndereco.textContent = formulario.endereco;
-                tr.appendChild(tdEndereco);
-                
-                const tdCep = document.createElement('td');
-                tdCep.textContent = formulario.cep;
-                tr.appendChild(tdCep);
-                
-                const tdCidade = document.createElement('td');
-                tdCidade.textContent = formulario.cidade;
-                tr.appendChild(tdCidade);
-                
-                const tdEstado = document.createElement('td');
-                tdEstado.textContent = formulario.estado;
-                tr.appendChild(tdEstado);
-                
-                const tdDataCompra = document.createElement('td');
-                tdDataCompra.textContent = formulario.data_compra;
-                tr.appendChild(tdDataCompra);
-                
-                const tdMensagem = document.createElement('td');
-                tdMensagem.textContent = formulario.mensagem;
-                tr.appendChild(tdMensagem);
-                
-                const tdDocumento = document.createElement('td');
-                const linkDocumento = document.createElement('a');
-                linkDocumento.href = formulario.document;
-                linkDocumento.target = '_blank';
-                linkDocumento.textContent = 'Ver Documento';
-                tdDocumento.appendChild(linkDocumento);
-                tr.appendChild(tdDocumento);
-    
-                tabelaFormularios.appendChild(tr);
-            });
+        if (!response.ok) {
+            alert('Você precisa estar logado para acessar esta página.');
+            window.location.href = 'login.html';
         }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        verificarSessao().then(() => carregarFormularios());
+    });
+
+    async function carregarFormularios() {
+        const response = await fetch('http://127.0.0.1:3000/formularios', {
+            credentials: 'include' // Inclui cookies nas requisições
+        });
+        const formularios = await response.json();
+        
+        const tabelaFormularios = document.getElementById('tabela-formularios');
+        tabelaFormularios.innerHTML = ''; // Limpa a tabela antes de preenchê-la
+        
+        formularios.forEach(formulario => {
+            const tr = document.createElement('tr');
+            
+            // Preenchimento das colunas da tabela
+            const tdNomeCompleto = document.createElement('td');
+            tdNomeCompleto.textContent = formulario.nome_completo;
+            tr.appendChild(tdNomeCompleto);
+            
+            const tdTelefone = document.createElement('td');
+            tdTelefone.textContent = formulario.telefone;
+            tr.appendChild(tdTelefone);
+            
+            const tdEmail = document.createElement('td');
+            tdEmail.textContent = formulario.email;
+            tr.appendChild(tdEmail);
+            
+            const tdCpfCnpj = document.createElement('td');
+            tdCpfCnpj.textContent = formulario.cpfcnpj;
+            tr.appendChild(tdCpfCnpj);
+            
+            const tdEndereco = document.createElement('td');
+            tdEndereco.textContent = formulario.endereco;
+            tr.appendChild(tdEndereco);
+            
+            const tdCep = document.createElement('td');
+            tdCep.textContent = formulario.cep;
+            tr.appendChild(tdCep);
+            
+            const tdCidade = document.createElement('td');
+            tdCidade.textContent = formulario.cidade;
+            tr.appendChild(tdCidade);
+            
+            const tdEstado = document.createElement('td');
+            tdEstado.textContent = formulario.estado;
+            tr.appendChild(tdEstado);
+            
+            const tdDataCompra = document.createElement('td');
+            tdDataCompra.textContent = formulario.data_compra;
+            tr.appendChild(tdDataCompra);
+            
+            const tdMensagem = document.createElement('td');
+            tdMensagem.textContent = formulario.mensagem;
+            tr.appendChild(tdMensagem);
+            
+            const tdDocumento = document.createElement('td');
+            const linkDocumento = document.createElement('a');
+            linkDocumento.href = formulario.document;
+            linkDocumento.target = '_blank';
+            linkDocumento.textContent = 'Ver Documento';
+            tdDocumento.appendChild(linkDocumento);
+            tr.appendChild(tdDocumento);
+
+            tabelaFormularios.appendChild(tr);
+        });
+    }
     </script>
-    
 </head>
 <body>
-    <a href="login.html" class="logout-button">Sair</a>
-    <h1>Formulários Submetidos</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Nome Completo</th>
-                <th>Telefone</th>
-                <th>Email</th>
-                <th>CPF/CNPJ</th>
-                <th>Endereço</th>
-                <th>CEP</th>
-                <th>Cidade</th>
-                <th>Estado</th>
-                <th>Data da Compra</th>
-                <th>Mensagem</th>
-                <th>Documento</th>
-            </tr>
-        </thead>
-        <tbody id="tabela-formularios">
-            <!-- Linhas da tabela serão preenchidas dinamicamente -->
-        </tbody>
-    </table>
+    <div class="header">
+        <a href="login.html" class="logout-button">Sair</a>
+        <h1>Formulários Submetidos</h1>
+    </div>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                    <th>CPF/CNPJ</th>
+                    <th>Endereço</th>
+                    <th>CEP</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
+                    <th>Data da Compra</th>
+                    <th>Mensagem</th>
+                    <th>Documento</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-formularios">
+                <!-- Linhas da tabela serão preenchidas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

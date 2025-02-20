@@ -136,40 +136,35 @@ app.post('/login', async (req, res) => {
     });
 });
 
-/*app.post('/login', async (req, res) => {
-    console.log('Rota /login acessada.'); // Log para verificação da rota
-    const { nome_usuario, senha } = req.body;
-    const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
-    db.query(sql, [nome_usuario], async (err, results) => {
-        if (err) {
-            console.error('Erro ao buscar usuário:', err);
-            res.status(500).json({ erro: 'Erro ao buscar usuário' });
-            return;
-        }
-        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
-            req.session.user = results[0];
-            console.log(`Usuário ${nome_usuario} fez login com sucesso.`); // Log de login bem-sucedido
-            res.json({ mensagem: 'Login efetuado com sucesso!' });
-        } else {
-            console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`); // Log de tentativa de login falhada
-            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
-        }
-    });
-});*/
-
 // Rotas GET
+
 app.get('/formularios', verificarSessao, (req, res) => {
-    console.log('Rota /formularios acessada.'); // Log para verificação da rota
-    const sql = 'SELECT * FROM formulario';
-    db.query(sql, (err, results) => {
+    console.log('Rota /formularios acessada.');
+    const page = parseInt(req.query.page) || 1; // Página atual, padrão é 1
+    const limit = parseInt(req.query.limit) || 10; // Limite de itens por página, padrão é 10
+    const offset = (page - 1) * limit; // Calculo do offset
+
+    const sql = `SELECT * FROM formulario LIMIT ? OFFSET ?`;
+    db.query(sql, [limit, offset], (err, results) => {
         if (err) {
             console.error('Erro ao obter Formulários:', err);
             res.status(500).json({ erro: 'Erro ao obter Formulários' });
             return;
         }
-        res.json(results);
+        // Obtendo o número total de formulários para fins de paginação
+        db.query('SELECT COUNT(*) as count FROM formulario', (countErr, countResults) => {
+            if (countErr) {
+                console.error('Erro ao obter contagem de Formulários:', countErr);
+                res.status(500).json({ erro: 'Erro ao obter contagem de Formulários' });
+                return;
+            }
+            const total = countResults[0].count;
+            const totalPages = Math.ceil(total / limit);
+            res.json({ formularios: results, totalPages });
+        });
     });
 });
+
 
 app.get('/verificar-sessao', (req, res) => {
     console.log('Rota /verificar-sessao acessada.');
@@ -206,17 +201,6 @@ app.get('/verificar-sessao', (req, res) => {
         res.status(401).json({ erro: 'Usuário não autenticado' });
     }
 });
-
-/*app.get('/verificar-sessao', (req, res) => {
-    console.log('Rota /verificar-sessao acessada.'); // Log para verificação da rota
-    if (req.session.user) {
-        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
-        res.status(200).json({ mensagem: 'Usuário autenticado' });
-    } else {
-        console.log('Usuário não autenticado na verificação de sessão.'); // Log de verificação de sessão falhada
-        res.status(401).json({ erro: 'Usuário não autenticado' });
-    }
-});*/
 
 // Inicialização do Servidor
 app.listen(port, () => {
