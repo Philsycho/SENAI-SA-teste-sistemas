@@ -83,7 +83,7 @@ function passwordHash(senha) {
 
 // Rotas POST
 app.post('/registro', (req, res) => {
-    console.log('Rota /registro acessada.');
+    console.log('Rota /registro acessada.'); // Log para verificação da rota
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
 
@@ -101,7 +101,9 @@ app.post('/registro', (req, res) => {
 app.post('/formulario', upload.single('document'), (req, res) => {
     console.log('Rota /formulario acessada.'); // Log para verificação da rota
     const { nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem } = req.body;
+    console.log(`Dados recebidos: ${nome_completo}, ${telefone}, ${email}, ${cpfcnpj}, ${endereco}, ${cep}, ${cidade}, ${estado}, ${data_compra}, ${mensagem}`);
     const document = req.file ? req.file.path : null; // Verifica se o arquivo foi enviado
+    console.log(`Arquivo recebido: ${document}`);
 
     const sql = 'INSERT INTO formulario (nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sql, [nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document], (err, results) => {
@@ -136,36 +138,42 @@ app.post('/login', async (req, res) => {
     });
 });
 
+/*app.post('/login', async (req, res) => {
+    console.log('Rota /login acessada.'); // Log para verificação da rota
+    const { nome_usuario, senha } = req.body;
+    const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
+    db.query(sql, [nome_usuario], async (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar usuário:', err);
+            res.status(500).json({ erro: 'Erro ao buscar usuário' });
+            return;
+        }
+        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
+            req.session.user = results[0];
+            console.log(`Usuário ${nome_usuario} fez login com sucesso.`); // Log de login bem-sucedido
+            res.json({ mensagem: 'Login efetuado com sucesso!' });
+        } else {
+            console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`); // Log de tentativa de login falhada
+            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
+        }
+    });
+});*/
+
 // Rotas GET
-
 app.get('/formularios', verificarSessao, (req, res) => {
-    console.log('Rota /formularios acessada.');
-    const page = parseInt(req.query.page) || 1; // Página atual, padrão é 1
-    const limit = parseInt(req.query.limit) || 10; // Limite de itens por página, padrão é 10
-    const offset = (page - 1) * limit; // Calculo do offset
-
-    const sql = `SELECT * FROM formulario LIMIT ? OFFSET ?`;
-    db.query(sql, [limit, offset], (err, results) => {
+    console.log('Rota /formularios acessada.'); // Log para verificação da rota
+    const sql = 'SELECT * FROM formulario';
+    db.query(sql, (err, results) => {
         if (err) {
             console.error('Erro ao obter Formulários:', err);
             res.status(500).json({ erro: 'Erro ao obter Formulários' });
             return;
         }
-        // Obtendo o número total de formulários para fins de paginação
-        db.query('SELECT COUNT(*) as count FROM formulario', (countErr, countResults) => {
-            if (countErr) {
-                console.error('Erro ao obter contagem de Formulários:', countErr);
-                res.status(500).json({ erro: 'Erro ao obter contagem de Formulários' });
-                return;
-            }
-            const total = countResults[0].count;
-            const totalPages = Math.ceil(total / limit);
-            res.json({ formularios: results, totalPages });
-        });
+        res.json(results);
     });
 });
 
-
+// Rota para verificar a sessão do usuário
 app.get('/verificar-sessao', (req, res) => {
     console.log('Rota /verificar-sessao acessada.');
     if (req.session.user) {

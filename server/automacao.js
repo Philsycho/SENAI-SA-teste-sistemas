@@ -1,5 +1,6 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
+const readline = require('readline');
 
 //#region Nome Completo
 function gerarNomeCompleto() {
@@ -141,13 +142,13 @@ function gerarDataAleatoria() {
 }
 //#endregion
 
-async function preencherFormulario() {
+async function preencherFormulario(vezes) {
     let driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options()).build();
 
     try {
         await driver.get('http://127.0.0.1:5500/public/formulario.html');
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < vezes; i++) {
             await driver.wait(until.elementLocated(By.id('nome_completo')), 10000);
             await driver.findElement(By.id('nome_completo')).sendKeys(gerarNomeCompleto());
             await driver.findElement(By.id('telefone')).sendKeys(gerarTelefone());
@@ -170,4 +171,24 @@ async function preencherFormulario() {
     }
 }
 
-preencherFormulario();
+// Função para obter a entrada do usuário
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.question('Quantas vezes deseja executar a automação? ', (resposta) => {
+    const vezes = parseInt(resposta);
+    if (isNaN(vezes) || vezes <= 0) {
+        console.log('Por favor, insira um número válido.');
+        rl.close();
+    } else {
+        preencherFormulario(vezes).then(() => {
+            console.log('Automação concluída.');
+            rl.close();
+        }).catch(err => {
+            console.error('Erro ao executar a automação:', err);
+            rl.close();
+        });
+    }
+});
