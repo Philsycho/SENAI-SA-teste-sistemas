@@ -2,6 +2,10 @@ const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const readline = require('readline');
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 //#region Nome Completo
 function gerarNomeCompleto() {
     const nomes = ["Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena", "Igor", "Juliana"];
@@ -142,30 +146,48 @@ function gerarDataAleatoria() {
 }
 //#endregion
 
-async function preencherFormulario(vezes) {
+async function preencherFormulario(vezes, pausa) {
     let driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options()).build();
 
     try {
         await driver.get('http://127.0.0.1:5500/public/formulario.html');
 
         for (let i = 0; i < vezes; i++) {
+            console.log(`Preenchendo formulário ${i + 1} de ${vezes}...`);
+
             await driver.wait(until.elementLocated(By.id('nome_completo')), 10000);
+            await driver.findElement(By.id('nome_completo')).clear();
             await driver.findElement(By.id('nome_completo')).sendKeys(gerarNomeCompleto());
+            await driver.findElement(By.id('telefone')).clear();
             await driver.findElement(By.id('telefone')).sendKeys(gerarTelefone());
+            await driver.findElement(By.id('email')).clear();
             await driver.findElement(By.id('email')).sendKeys(gerarEmail());
+            await driver.findElement(By.id('cpfcnpj')).clear();
             await driver.findElement(By.id('cpfcnpj')).sendKeys(gerarCpfCnpj());
+            await driver.findElement(By.id('cep')).clear();
             await driver.findElement(By.id('cep')).sendKeys(gerarCep());
+            await driver.findElement(By.id('endereco')).clear();
             await driver.findElement(By.id('endereco')).sendKeys(`Endereço ${i}`);
+            await driver.findElement(By.id('cidade')).clear();
             await driver.findElement(By.id('cidade')).sendKeys(gerarCidade());
+            await driver.findElement(By.id('estado')).clear();
             await driver.findElement(By.id('estado')).sendKeys(gerarEstado());
             await driver.findElement(By.id('data_compra')).sendKeys(gerarDataAleatoria());
+            await driver.findElement(By.id('mensagem')).clear();
             await driver.findElement(By.id('mensagem')).sendKeys(`Mensagem ${i}`);
 
             await driver.findElement(By.css('input[type="submit"]')).click();
 
-            // Espera a página recarregar antes de preencher o próximo formulário
-            await driver.wait(until.elementLocated(By.id('nome_completo')), 10000);
+            // Aceitar o alerta após enviar o formulário
+            await driver.wait(until.alertIsPresent(), 10000);
+            let alert = await driver.switchTo().alert();
+            await alert.accept();
+
+            // Pausa entre os preenchimentos
+            await delay(pausa);
         }
+    } catch (error) {
+        console.error('Erro ao preencher o formulário:', error);
     } finally {
         await driver.quit();
     }
@@ -183,12 +205,20 @@ rl.question('Quantas vezes deseja executar a automação? ', (resposta) => {
         console.log('Por favor, insira um número válido.');
         rl.close();
     } else {
-        preencherFormulario(vezes).then(() => {
-            console.log('Automação concluída.');
-            rl.close();
-        }).catch(err => {
-            console.error('Erro ao executar a automação:', err);
-            rl.close();
+        rl.question('Digite o tempo de pausa entre os preenchimentos (em milissegundos): ', (pausaResposta) => {
+            const pausa = parseInt(pausaResposta);
+            if (isNaN(pausa) || pausa < 0) {
+                console.log('Por favor, insira um número válido para a pausa.');
+                rl.close();
+            } else {
+                preencherFormulario(vezes, pausa).then(() => {
+                    console.log('Automação concluída.');
+                    rl.close();
+                }).catch(err => {
+                    console.error('Erro ao executar a automação:', err);
+                    rl.close();
+                });
+            }
         });
     }
 });
