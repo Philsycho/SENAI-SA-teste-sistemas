@@ -83,7 +83,7 @@ function passwordHash(senha) {
 
 // Rotas POST
 app.post('/registro', (req, res) => {
-    console.log('Rota /registro acessada.');
+    console.log('Rota /registro acessada.'); // Log para verificação da rota
     const { nome_completo, nome_usuario, email, senha } = req.body;
     const senhaCriptografada = passwordHash(senha);
 
@@ -101,7 +101,9 @@ app.post('/registro', (req, res) => {
 app.post('/formulario', upload.single('document'), (req, res) => {
     console.log('Rota /formulario acessada.'); // Log para verificação da rota
     const { nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem } = req.body;
+    console.log(`Dados recebidos: ${nome_completo}, ${telefone}, ${email}, ${cpfcnpj}, ${endereco}, ${cep}, ${cidade}, ${estado}, ${data_compra}, ${mensagem}`);
     const document = req.file ? req.file.path : null; // Verifica se o arquivo foi enviado
+    console.log(`Arquivo recebido: ${document}`);
 
     const sql = 'INSERT INTO formulario (nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sql, [nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document], (err, results) => {
@@ -171,6 +173,7 @@ app.get('/formularios', verificarSessao, (req, res) => {
     });
 });
 
+// Rota para verificar a sessão do usuário
 app.get('/verificar-sessao', (req, res) => {
     console.log('Rota /verificar-sessao acessada.');
     if (req.session.user) {
@@ -206,17 +209,6 @@ app.get('/verificar-sessao', (req, res) => {
         res.status(401).json({ erro: 'Usuário não autenticado' });
     }
 });
-
-/*app.get('/verificar-sessao', (req, res) => {
-    console.log('Rota /verificar-sessao acessada.'); // Log para verificação da rota
-    if (req.session.user) {
-        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`); // Log de verificação de sessão
-        res.status(200).json({ mensagem: 'Usuário autenticado' });
-    } else {
-        console.log('Usuário não autenticado na verificação de sessão.'); // Log de verificação de sessão falhada
-        res.status(401).json({ erro: 'Usuário não autenticado' });
-    }
-});*/
 
 // Inicialização do Servidor
 app.listen(port, () => {

@@ -17,6 +17,17 @@ body {
     padding: 20px;
 }
 
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    background-color: #f4f4f4;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 h1, h2 {
     color: #005A9C; /* Azul SESI/SENAI */
     margin-bottom: 20px;
@@ -118,4 +129,22 @@ table tbody tr:hover {
 #modal-edicao form {
     width: 100%;
     max-width: 500px;
+}
+
+.logout-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #E2231A;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+    background-color: #C81D1A;
 }
