@@ -10,35 +10,69 @@
     <form onsubmit="registrarUsuario(event)">
         <label for="nome_completo">Nome Completo:</label>
         <input type="text" id="nome_completo" name="nome_completo" required><br>
+
         <label for="nome_usuario">Nome de Usuário:</label>
         <input type="text" id="nome_usuario" name="nome_usuario" required><br>
+
         <label for="email">E-mail:</label>
         <input type="email" id="email" name="email" required><br>
+
         <label for="senha">Senha:</label>
         <input type="password" id="senha" name="senha" required><br>
+
+        <label for="confirmar_senha">Confirmar Senha:</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" required><br>
+
         <input type="submit" value="Registrar">
     </form>
+
     <script>
     async function registrarUsuario(event) {
         event.preventDefault();
+        
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
-    
-        const response = await fetch('http://localhost:3000/registro', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-    
-        if (response.ok) {
-            alert('Registro efetuado com sucesso!');
-        } else {
-            alert('Erro ao registrar usuário.');
+
+        if (data.nome_usuario.includes(" ")) {
+            alert("O nome de usuário não pode conter espaços.");
+            return;
+        }
+
+        if (data.senha.length < 6) {
+            alert("A senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
+
+        if (data.senha !== data.confirmar_senha) {
+            alert("As senhas não coincidem.");
+            return;
+        }
+
+        const botao = document.querySelector('input[type="submit"]');
+        botao.disabled = true;
+
+        try {
+            const response = await fetch('http://localhost:3000/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Registro efetuado com sucesso!');
+                window.location.href = 'login.html';
+            } else {
+                alert(result.message || 'Erro ao registrar usuário.');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            alert('Erro ao conectar ao servidor.');
+        } finally {
+            botao.disabled = false;
         }
     }
     </script>
-    
 </body>
 </html>

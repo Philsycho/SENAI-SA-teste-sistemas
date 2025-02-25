@@ -7,5 +7,7 @@
 			"path": "../../../Users/juare/Senai_teste-sistemas"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "SENAI-SA-teste-sistemas"
+	}
 }

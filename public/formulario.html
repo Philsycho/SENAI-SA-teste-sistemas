@@ -8,30 +8,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script>
     $(document).ready(function(){
-        $('#telefone').mask('(00) 0000-0000');
-        $('#cpfcnpj').mask('000.000.000-00'); // Para CPF
+        $('#telefone').mask('(00) 00000-0000'); // Adaptei para o padrão celular
+        $('#cpfcnpj').mask('000.000.000-00', {reverse: true});
         $('#cep').mask('00000-000');
+
+        // Adiciona validação para CPF/CNPJ
+        $('#cpfcnpj').on('input', function() {
+            var valor = $(this).val().replace(/\D/g, '');
+            if (valor.length > 11) {
+                $(this).mask('00.000.000/0000-00', {reverse: true});
+            } else {
+                $(this).mask('000.000.000-00', {reverse: true});
+            }
+        });
     });
 
     async function enviarFormulario(event) {
-        event.preventDefault(); // Previne o envio padrão do formulário
+        event.preventDefault();
 
         const formData = new FormData(event.target);
+        const file = formData.get("document");
 
-        const response = await fetch('http://localhost:3000/formulario', {
-            method: 'POST',
-            body: formData
-        });
+        // Validação do arquivo (PDF até 10MB)
+        if (file && file.size > 10 * 1024 * 1024) {
+            alert("O arquivo deve ter no máximo 10MB.");
+            return;
+        }
 
-        if (response.ok) {
-            alert('Dados inseridos com sucesso!');
-        } else {
-            alert('Erro ao inserir dados.');
+        try {
+            const response = await fetch('http://localhost:3000/formulario', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Dados inseridos com sucesso!');
+                event.target.reset(); // Limpa o formulário após envio bem-sucedido
+            } else {
+                alert('Erro ao inserir dados.');
+            }
+        } catch (error) {
+            console.error('Erro ao enviar formulário:', error);
+            alert('Erro ao conectar ao servidor.');
         }
     }
     </script>
 </head>
 <body>
+    <h1>Formulário de Cadastro</h1>
     <form onsubmit="enviarFormulario(event)" enctype="multipart/form-data">
         <label for="nome_completo">Nome Completo:</label>
         <input type="text" id="nome_completo" name="nome_completo" required><br>
@@ -61,7 +85,7 @@
         <input type="date" id="data_compra" name="data_compra" required><br>
 
         <label for="mensagem">Mensagem:</label>
-        <input type="text" id="mensagem" name="mensagem"><br>
+        <textarea id="mensagem" name="mensagem" rows="4"></textarea><br>
 
         <label for="document">Documento (PDF, até 10MB):</label>
         <input type="file" id="document" name="document" accept="application/pdf"><br>
