@@ -41,7 +41,7 @@
             const tdDocumento = document.createElement('td');
             if (formulario.document) {
                 const linkDocumento = document.createElement('a');
-                linkDocumento.href = formulario.document;
+                linkDocumento.href = `http://localhost:3000${formulario.document}`;
                 linkDocumento.target = '_blank';
                 linkDocumento.textContent = 'Ver Documento';
                 tdDocumento.appendChild(linkDocumento);
@@ -53,12 +53,25 @@
             tabelaFormularios.appendChild(tr);
         });
     }
+
+    async function logout() {
+        const response = await fetch('http://127.0.0.1:3000/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            window.location.href = 'login.html';
+        } else {
+            alert('Erro ao fazer logout.');
+        }
+    }
     </script>
 </head>
 <body>
     <div class="header">
         <h1>Formulários Submetidos</h1>
-        <a href="login.html" class="logout-button">Sair</a>
+        <a href="#" onclick="logout()" class="logout-button">Sair</a>
     </div>
     <div class="container">
         <table>

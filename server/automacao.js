@@ -1,6 +1,7 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const readline = require('readline');
+const fs = require('fs');
 
 //#region Utilitários
 function delay(ms) {
@@ -43,21 +44,58 @@ function gerarDataAleatoria() {
     const dia = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
     return `${ano}-${mes}-${dia}`;
 }
+
+function gerarCPF() {
+    function gerarDigito(cpf) {
+        let soma = 0;
+        for (let i = 0; i < cpf.length; i++) {
+            soma += cpf[i] * (cpf.length + 1 - i);
+        }
+        const resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
+    }
+
+    const cpf = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+    cpf.push(gerarDigito(cpf));
+    cpf.push(gerarDigito(cpf));
+
+    return cpf.join('').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function gerarNomeArquivo() {
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const hora = String(agora.getHours()).padStart(2, '0');
+    const minuto = String(agora.getMinutes()).padStart(2, '0');
+    const segundo = String(agora.getSeconds()).padStart(2, '0');
+    return `${ano}${mes}${dia}_${hora}${minuto}${segundo}_relatorio.txt`;
+}
 //#endregion
 
 async function preencherFormulario(vezes, pausa) {
+    console.log('Iniciando automação...');
     let driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options()).build();
+    console.log('Driver do Chrome inicializado.');
+
+    const relatorio = [];
+    const nomeArquivo = gerarNomeArquivo();
 
     try {
+        console.log('Acessando a página do formulário...');
         await driver.get('http://127.0.0.1:5500/public/formulario.html');
+        console.log('Página do formulário carregada.');
 
         for (let i = 0; i < vezes; i++) {
-            console.log(`Preenchendo formulário ${i + 1} de ${vezes}...`);
+            console.log(`\nPreenchendo formulário ${i + 1} de ${vezes}...`);
+            relatorio.push(`Formulário ${i + 1} de ${vezes}:`);
 
             const campos = {
                 'nome_completo': gerarNomeCompleto(),
                 'telefone': gerarTelefone(),
                 'email': gerarEmail(),
+                'cpfcnpj': gerarCPF(),
                 'cep': gerarCep(),
                 'endereco': `Endereço ${i}`,
                 'cidade': gerarCidade(),
@@ -67,24 +105,32 @@ async function preencherFormulario(vezes, pausa) {
             };
 
             for (let id in campos) {
+                console.log(`Preenchendo campo ${id} com valor: ${campos[id]}`);
+                relatorio.push(`  ${id}: ${campos[id]}`);
                 let elemento = await driver.findElement(By.id(id));
                 await elemento.clear();
                 await elemento.sendKeys(campos[id]);
+                console.log(`Campo ${id} preenchido com sucesso.`);
             }
 
+            console.log('Clicando no botão de enviar...');
             await driver.findElement(By.css('input[type="submit"]')).click();
+            console.log('Botão de enviar clicado.');
 
-            // Aceitar alerta
-            await driver.wait(until.alertIsPresent(), 5000);
-            let alert = await driver.switchTo().alert();
-            await alert.accept();
-
+            console.log(`Aguardando ${pausa}ms antes do próximo preenchimento...`);
             await delay(pausa);
         }
     } catch (error) {
         console.error('Erro ao preencher o formulário:', error);
+        relatorio.push(`Erro: ${error.message}`);
     } finally {
+        console.log('Finalizando automação...');
         await driver.quit();
+        console.log('Driver do Chrome encerrado.');
+
+        // Escreve o relatório em um arquivo TXT
+        fs.writeFileSync(nomeArquivo, relatorio.join('\n'));
+        console.log(`Relatório salvo em ${nomeArquivo}`);
     }
 }
 
