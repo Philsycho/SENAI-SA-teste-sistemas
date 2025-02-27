@@ -14,6 +14,12 @@ const port = 3000;
 // Determinar se está em ambiente de produção ou desenvolvimento
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Cria o diretório 'uploads' se ele não existir
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true }); // Cria o diretório e seus pais, se necessário
+}
+
 // Configurar CORS para permitir a origem http://127.0.0.1:5500
 app.use(cors({
     origin: 'http://127.0.0.1:5500', // Permitir a origem do frontend
@@ -46,7 +52,7 @@ function verificarSessao(req, res, next) {
 // Configuração do Multer para upload de arquivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        cb(null, uploadsDir); // Usa o diretório 'uploads'
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
@@ -54,7 +60,7 @@ const storage = multer.diskStorage({
         let filename = `${base}${ext}`;
         let counter = 1;
 
-        while (fs.existsSync(`uploads/${filename}`)) {
+        while (fs.existsSync(path.join(uploadsDir, filename))) {
             filename = `${base}(${counter})${ext}`;
             counter++;
         }
@@ -99,18 +105,15 @@ app.post('/registro', (req, res) => {
 });
 
 app.post('/formulario', upload.single('document'), (req, res) => {
-    console.log('Rota /formulario acessada.'); // Log para verificação da rota
+    console.log('Rota /formulario acessada.');
     const { nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem } = req.body;
-    console.log(`Dados recebidos: ${nome_completo}, ${telefone}, ${email}, ${cpfcnpj}, ${endereco}, ${cep}, ${cidade}, ${estado}, ${data_compra}, ${mensagem}`);
-    const document = req.file ? req.file.path : null; // Verifica se o arquivo foi enviado
-    console.log(`Arquivo recebido: ${document}`);
+    const document = req.file ? `/uploads/${req.file.filename}` : null;
 
     const sql = 'INSERT INTO formulario (nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sql, [nome_completo, telefone, email, cpfcnpj, endereco, cep, cidade, estado, data_compra, mensagem, document], (err, results) => {
         if (err) {
             console.error('Erro ao inserir dados:', err);
-            res.status(500).json({ erro: 'Erro ao inserir dados' });
-            return;
+            return res.status(500).json({ erro: 'Erro ao inserir dados' });
         }
         res.status(201).json({ mensagem: 'Dados inseridos com sucesso!' });
     });
@@ -120,44 +123,42 @@ app.post('/formulario', upload.single('document'), (req, res) => {
 app.post('/login', async (req, res) => {
     console.log('Rota /login acessada.');
     const { nome_usuario, senha } = req.body;
+    
+    // Verifica se os campos foram preenchidos
+    if (!nome_usuario || !senha) {
+        return res.status(400).json({ erro: 'Nome de usuário e senha são obrigatórios' });
+    }
+
     const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
     db.query(sql, [nome_usuario], async (err, results) => {
         if (err) {
             console.error('Erro ao buscar usuário:', err);
-            res.status(500).json({ erro: 'Erro ao buscar usuário' });
-            return;
+            return res.status(500).json({ erro: 'Erro ao buscar usuário' });
         }
-        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
-            req.session.user = results[0];
+        
+        // Verifica se o usuário foi encontrado
+        if (results.length === 0) {
+            return res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
+        }
+
+        // Compara a senha
+        const usuario = results[0];
+        const senhaValida = await bcrypt.compare(senha, usuario.senha);
+        
+        if (senhaValida) {
+            req.session.user = {
+                id: usuario.id,
+                nome_usuario: usuario.nome_usuario,
+                email: usuario.email
+            };
             console.log(`Usuário ${nome_usuario} fez login com sucesso.`);
-            res.json({ mensagem: 'Login efetuado com sucesso!' });
+            return res.json({ mensagem: 'Login efetuado com sucesso!' });
         } else {
             console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`);
-            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
+            return res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
         }
     });
 });
-
-/*app.post('/login', async (req, res) => {
-    console.log('Rota /login acessada.'); // Log para verificação da rota
-    const { nome_usuario, senha } = req.body;
-    const sql = 'SELECT * FROM usuario WHERE nome_usuario = ?';
-    db.query(sql, [nome_usuario], async (err, results) => {
-        if (err) {
-            console.error('Erro ao buscar usuário:', err);
-            res.status(500).json({ erro: 'Erro ao buscar usuário' });
-            return;
-        }
-        if (results.length > 0 && await bcrypt.compare(senha, results[0].senha)) {
-            req.session.user = results[0];
-            console.log(`Usuário ${nome_usuario} fez login com sucesso.`); // Log de login bem-sucedido
-            res.json({ mensagem: 'Login efetuado com sucesso!' });
-        } else {
-            console.log(`Tentativa de login falhou para o usuário ${nome_usuario}.`); // Log de tentativa de login falhada
-            res.status(401).json({ erro: 'Nome de usuário ou senha incorretos' });
-        }
-    });
-});*/
 
 // Rotas GET
 app.get('/formularios', verificarSessao, (req, res) => {
@@ -175,12 +176,9 @@ app.get('/formularios', verificarSessao, (req, res) => {
 
 // Rota para verificar a sessão do usuário
 app.get('/verificar-sessao', (req, res) => {
-    console.log('Rota /verificar-sessao acessada.');
     if (req.session.user) {
-        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`);
-        res.status(200).json({ mensagem: 'Usuário autenticado' });
+        res.status(200).json({ mensagem: 'Usuário autenticado', usuario: req.session.user });
     } else {
-        console.log('Usuário não autenticado na verificação de sessão.');
         res.status(401).json({ erro: 'Usuário não autenticado' });
     }
 });
@@ -198,15 +196,26 @@ app.get('/registros', verificarSessao, (req, res) => {
     });
 });
 
-// Rota para verificar a sessão do usuário
-app.get('/verificar-sessao', (req, res) => {
-    console.log('Rota /verificar-sessao acessada.');
-    if (req.session.user) {
-        console.log(`Usuário ${req.session.user.nome_usuario} está autenticado na verificação de sessão.`);
-        res.status(200).json({ mensagem: 'Usuário autenticado' });
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Erro ao fazer logout:', err);
+            return res.status(500).json({ erro: 'Erro ao fazer logout' });
+        }
+        res.clearCookie('connect.sid');
+        res.status(200).json({ mensagem: 'Logout efetuado com sucesso' });
+    });
+});
+
+// Rota para servir arquivos PDF
+app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(uploadsDir, filename);
+
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
     } else {
-        console.log('Usuário não autenticado na verificação de sessão.');
-        res.status(401).json({ erro: 'Usuário não autenticado' });
+        res.status(404).json({ erro: 'Arquivo não encontrado' });
     }
 });
 

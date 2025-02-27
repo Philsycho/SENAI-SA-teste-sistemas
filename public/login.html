@@ -6,12 +6,16 @@
     <link rel="stylesheet" href="estilo.css">
     <script>
         async function verificarSessao() {
-            const response = await fetch('http://127.0.0.1:3000/verificar-sessao', {
-                credentials: 'include'
-            });
+            try {
+                const response = await fetch('http://127.0.0.1:3000/verificar-sessao', {
+                    credentials: 'include'
+                });
 
-            if (response.ok) {
-                window.location.href = 'visualizar.html';
+                if (response.ok) {
+                    window.location.href = 'visualizar.html';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar sessão:', error);
             }
         }
 

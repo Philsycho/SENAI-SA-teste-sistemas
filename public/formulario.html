@@ -41,11 +41,13 @@
                 body: formData
             });
 
+            const result = await response.json();
+
             if (response.ok) {
                 alert('Dados inseridos com sucesso!');
                 event.target.reset(); // Limpa o formulário após envio bem-sucedido
             } else {
-                alert('Erro ao inserir dados.');
+                alert(result.erro || 'Erro ao inserir dados.');
             }
         } catch (error) {
             console.error('Erro ao enviar formulário:', error);
