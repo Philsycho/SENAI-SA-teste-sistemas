@@ -123,4 +123,4 @@ Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICEN
 
 ## Suporte
 
-Para suporte, entre em contato com [seu-email@dominio.com](mailto:seu-email@dominio.com).
+Para suporte, entre em contato com [juarez_philipi@estudante.sc.senai.br](mailto:juarez_philipi@estudante.sc.senai.br).
