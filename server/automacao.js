@@ -122,7 +122,9 @@ async function preencherFormulario(vezes, pausa) {
                 relatorio.push(`  ${id}: ${campos[id]}`);
                 let elemento = await driver.findElement(By.id(id));
                 await elemento.clear();
+                await delay(500);
                 await elemento.sendKeys(campos[id]);
+                await delay(500);
                 console.log(`Campo ${id} preenchido com sucesso.`);
             }
 
@@ -131,10 +133,12 @@ async function preencherFormulario(vezes, pausa) {
             console.log(`Selecionando arquivo PDF: ${caminhoPDF}`);
             const inputArquivo = await driver.findElement(By.id('document'));
             await inputArquivo.sendKeys(caminhoPDF);
+            await delay(1000);
             console.log('Arquivo PDF selecionado.');
 
             console.log('Clicando no botão de enviar...');
             await driver.findElement(By.css('input[type="submit"]')).click();
+            await delay(1000);
             console.log('Botão de enviar clicado.');
 
             // Fechar o alerta

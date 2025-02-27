@@ -1,3 +1,13 @@
+/* Nova paleta de cores */
+:root {
+    --primary: #52009B;       /* Roxo principal */
+    --secondary: #7E3FCB;     /* Roxo mais claro */
+    --accent: #FFC107;        /* Amarelo para contraste */
+    --background: #F5F3F7;    /* Fundo claro */
+    --text: #2E2E2E;          /* Texto escuro */
+    --text-light: #FFFFFF;    /* Texto claro */
+}
+
 /* Reset básico */
 * {
     margin: 0;
@@ -7,8 +17,8 @@
 }
 
 body {
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: var(--background);
+    color: var(--text);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -24,17 +34,17 @@ body {
     align-items: center;
     padding: 20px;
     position: relative;
-    background-color: #f4f4f4;
+    background-color: var(--primary);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 h1, h2 {
-    color: #005A9C; /* Azul SESI/SENAI */
+    color: var(--primary);
     margin-bottom: 20px;
 }
 
 form {
-    background-color: #fff;
+    background-color: var(--text-light);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -58,8 +68,8 @@ input[type="text"], input[type="email"], input[type="password"], input[type="dat
 }
 
 input[type="submit"], button {
-    background-color: #E2231A; /* Vermelho SESI/SENAI */
-    color: #fff;
+    background-color: var(--primary);
+    color: var(--text-light);
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -69,12 +79,12 @@ input[type="submit"], button {
 }
 
 input[type="submit"]:hover, button:hover {
-    background-color: #C81D1A;
+    background-color: var(--secondary);
 }
 
 .logout-button {
-    background-color: #E2231A;
-    color: #fff;
+    background-color: var(--accent);
+    color: var(--text);
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -84,7 +94,7 @@ input[type="submit"]:hover, button:hover {
 }
 
 .logout-button:hover {
-    background-color: #C81D1A;
+    background-color: #FFB300;
 }
 
 table {
@@ -102,8 +112,8 @@ table th, table td {
 }
 
 table th {
-    background-color: #005A9C;
-    color: #fff;
+    background-color: var(--primary);
+    color: var(--text-light);
 }
 
 table tbody tr:nth-child(even) {
@@ -135,8 +145,8 @@ table tbody tr:hover {
     position: absolute;
     top: 20px;
     right: 20px;
-    background-color: #E2231A;
-    color: #fff;
+    background-color: var(--accent);
+    color: var(--text);
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -146,5 +156,5 @@ table tbody tr:hover {
 }
 
 .logout-button:hover {
-    background-color: #C81D1A;
+    background-color: #FFB300;
 }

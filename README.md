@@ -13,13 +13,13 @@ Este projeto é um sistema completo para envio e visualização de formulários,
 
 1. **Clone o repositório**:
    ```bash
-   git clone https://github.com/Philsycho/SENAI-SA-teste-sistemas
+   git clone https://github.com/Philpsycho/SENAI-SA-teste-sistemas
    cd SENAI-SA-teste-sistemas
    ```
 
 2. **Instale as dependências**:
    ```bash
-   npm install
+   npm install express body-parser cors express-session bcrypt multer mysql2 selenium-webdriver chrome
    ```
 
 3. **Configure o banco de dados**:
