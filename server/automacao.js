@@ -2,6 +2,7 @@ const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const readline = require('readline');
 const fs = require('fs');
+const path = require('path');
 
 //#region Utilitários
 function delay(ms) {
@@ -72,6 +73,18 @@ function gerarNomeArquivo() {
     const segundo = String(agora.getSeconds()).padStart(2, '0');
     return `${ano}${mes}${dia}_${hora}${minuto}${segundo}_relatorio.txt`;
 }
+
+function selecionarPDFAleatorio() {
+    const diretorioPDFs = path.join(__dirname, 'pdfs-teste');
+    const arquivosPDF = fs.readdirSync(diretorioPDFs).filter(file => file.endsWith('.pdf'));
+
+    if (arquivosPDF.length === 0) {
+        throw new Error('Nenhum arquivo PDF encontrado na pasta "pdfs-teste".');
+    }
+
+    const arquivoSelecionado = arquivosPDF[Math.floor(Math.random() * arquivosPDF.length)];
+    return path.join(diretorioPDFs, arquivoSelecionado);
+}
 //#endregion
 
 async function preencherFormulario(vezes, pausa) {
@@ -113,9 +126,24 @@ async function preencherFormulario(vezes, pausa) {
                 console.log(`Campo ${id} preenchido com sucesso.`);
             }
 
+            // Selecionar e enviar um PDF aleatório
+            const caminhoPDF = selecionarPDFAleatorio();
+            console.log(`Selecionando arquivo PDF: ${caminhoPDF}`);
+            const inputArquivo = await driver.findElement(By.id('document'));
+            await inputArquivo.sendKeys(caminhoPDF);
+            console.log('Arquivo PDF selecionado.');
+
             console.log('Clicando no botão de enviar...');
             await driver.findElement(By.css('input[type="submit"]')).click();
             console.log('Botão de enviar clicado.');
+
+            // Fechar o alerta
+            console.log('Aguardando alerta...');
+            await driver.wait(until.alertIsPresent(), 5000);
+            let alert = await driver.switchTo().alert();
+            console.log('Alerta detectado. Aceitando alerta...');
+            await alert.accept();
+            console.log('Alerta aceito.');
 
             console.log(`Aguardando ${pausa}ms antes do próximo preenchimento...`);
             await delay(pausa);

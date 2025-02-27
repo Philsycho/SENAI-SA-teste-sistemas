@@ -14,7 +14,7 @@ Este projeto é um sistema completo para envio e visualização de formulários,
 1. **Clone o repositório**:
    ```bash
    git clone https://github.com/Philsycho/SENAI-SA-teste-sistemas
-   cd seu-repositorio
+   cd SENAI-SA-teste-sistemas
    ```
 
 2. **Instale as dependências**:
@@ -95,6 +95,16 @@ Este projeto é um sistema completo para envio e visualização de formulários,
    ```bash
    node server/automacao.js
    ```
+   Certifique-se de que há arquivos PDF na pasta `pdfs-teste` para que o script possa selecionar e enviar aleatoriamente.
+
+4. **Pasta de PDFs**:
+   Crie uma pasta chamada `pdfs-teste` no mesmo diretório onde o script `automacao.js` está localizado e coloque alguns arquivos PDF lá.
+
+5. **Detalhes da Automação**:
+   - O script preenche automaticamente os campos do formulário.
+   - Seleciona aleatoriamente um arquivo PDF da pasta `pdfs-teste` para upload.
+   - Fecha automaticamente o alerta de sucesso após o envio do formulário.
+   - Gera um relatório em TXT com os detalhes de cada preenchimento.
 
 ## Contribuição
 
@@ -109,6 +119,7 @@ Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICEN
 - **Erro ao conectar ao servidor**: Certifique-se de que o servidor está rodando e que o frontend está acessando a URL correta.
 - **Erro ao enviar formulário**: Verifique se todos os campos obrigatórios foram preenchidos e se o arquivo PDF não excede o limite de 10MB.
 - **Erro ao visualizar documento**: Certifique-se de que o arquivo PDF foi salvo corretamente no diretório `uploads` e que o caminho no banco de dados está correto.
+- **Erro na automação**: Verifique se a pasta `pdfs-teste` existe e contém arquivos PDF.
 
 ## Suporte
 
