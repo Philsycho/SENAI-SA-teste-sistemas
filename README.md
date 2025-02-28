@@ -13,13 +13,13 @@ Este projeto é um sistema completo para envio e visualização de formulários,
 
 1. **Clone o repositório**:
    ```bash
-   git clone https://github.com/Philsycho/SENAI-SA-teste-sistemas
+   git clone https://github.com/Philpsycho/SENAI-SA-teste-sistemas
    cd SENAI-SA-teste-sistemas
    ```
 
 2. **Instale as dependências**:
    ```bash
-   npm install
+   npm install express body-parser cors express-session bcrypt multer mysql2 selenium-webdriver chrome
    ```
 
 3. **Configure o banco de dados**:
@@ -43,6 +43,33 @@ Este projeto é um sistema completo para envio e visualização de formulários,
 
 6. **Acesse o frontend**:
    Abra o arquivo `public/login.html` no seu navegador.
+
+## Funções do Projeto
+
+### Autenticação
+- **Registro de usuário**: Permite o cadastro de novos usuários no sistema.
+- **Login**: Autentica os usuários e inicia uma sessão.
+- **Logout**: Encerra a sessão do usuário.
+
+### Formulários
+- **Envio de formulário**: Permite o envio de formulários com upload de arquivos PDF.
+- **Visualização de formulários**: Exibe todos os formulários enviados (requer autenticação).
+- **Download de documentos**: Permite o download dos arquivos PDF enviados.
+
+### Automação
+- **Preenchimento automático**: Preenche automaticamente o formulário com dados aleatórios.
+- **Relatório de execução**: Gera um relatório em TXT com os detalhes de cada preenchimento.
+- **Controle de tempo**: Registra o tempo de execução de cada formulário e da automação completa.
+
+### Segurança
+- **Criptografia de senhas**: As senhas são criptografadas antes de serem armazenadas no banco de dados.
+- **Verificação de sessão**: Verifica se o usuário está autenticado antes de acessar recursos protegidos.
+- **Validação de arquivos**: Verifica se o arquivo enviado é um PDF e se não excede o limite de 10MB.
+
+### Interface
+- **Máscaras de entrada**: Aplica máscaras para campos como CPF/CNPJ, telefone e CEP.
+- **Validação de formulários**: Verifica se todos os campos obrigatórios foram preenchidos.
+- **Design responsivo**: A interface se adapta a diferentes tamanhos de tela.
 
 ## Estrutura do Projeto
 
