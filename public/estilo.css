@@ -33,9 +33,14 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     background-color: var(--primary);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    height: 80px;
 }
 
 h1, h2 {
@@ -157,4 +162,14 @@ table tbody tr:hover {
 
 .logout-button:hover {
     background-color: #FFB300;
+}
+
+/* Adicionar margem ao container para evitar sobreposição */
+.container {
+    margin-top: 80px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
 }

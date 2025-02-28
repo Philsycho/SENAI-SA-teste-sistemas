@@ -40,7 +40,7 @@ function gerarCidade() {
 }
 
 function gerarDataAleatoria() {
-    const ano = Math.floor(Math.random() * (2025 - 2000 + 1)) + 2000;
+    const ano = Math.floor(Math.random() * (2024 - 1900 + 1)) + 1900;
     const mes = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
     const dia = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
     return `${ano}-${mes}-${dia}`;
@@ -85,22 +85,76 @@ function selecionarPDFAleatorio() {
     const arquivoSelecionado = arquivosPDF[Math.floor(Math.random() * arquivosPDF.length)];
     return path.join(diretorioPDFs, arquivoSelecionado);
 }
+
+function gerarMensagemAleatoria() {
+    const mensagens = [
+        "Solicito informações adicionais sobre o produto.",
+        "Gostaria de fazer uma reclamação sobre o serviço.",
+        "Preciso de suporte técnico para o equipamento.",
+        "Desejo cancelar minha assinatura.",
+        "Quero elogiar o atendimento recebido.",
+        "Preciso de ajuda para configurar meu dispositivo.",
+        "Gostaria de saber mais sobre as garantias oferecidas.",
+        "Solicito um orçamento para o serviço.",
+        "Preciso de informações sobre políticas de devolução.",
+        "Gostaria de fazer uma sugestão para melhorar o produto."
+    ];
+    return escolherAleatorio(mensagens);
+}
 //#endregion
+
+// Configuração do Chrome
+const options = new chrome.Options();
+options.setAlertBehavior('accept'); // Aceita automaticamente os alertas do navegador
 
 async function preencherFormulario(vezes, pausa) {
     console.log('Iniciando automação...');
-    let driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options()).build();
+    let driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build();
     console.log('Driver do Chrome inicializado.');
 
     const relatorio = [];
     const nomeArquivo = gerarNomeArquivo();
 
     try {
-        console.log('Acessando a página do formulário...');
-        await driver.get('http://127.0.0.1:5500/public/formulario.html');
-        console.log('Página do formulário carregada.');
+        // Primeiro, fazer login
+        console.log('Acessando a página de login...');
+        await driver.get('http://127.0.0.1:5500/public/login.html');
+        console.log('Página de login carregada.');
+
+        // Preencher campos de login
+        console.log('Preenchendo formulário de login...');
+        await driver.findElement(By.id('nome_usuario')).sendKeys('adm@adm.com.br');
+        await delay(500);
+        await driver.findElement(By.id('senha')).sendKeys('KTG6MghgiBF$Nn9SL5');
+        await delay(500);
+
+        // Clicar no botão de login
+        console.log('Clicando no botão de login...');
+        await driver.findElement(By.css('input[type="submit"]')).click();
+        await delay(1000);
+
+        // Fechar o alerta de mudança de senha do navegador
+        console.log('Fechando alerta de mudança de senha...');
+        try {
+            await driver.wait(until.alertIsPresent(), 5000);
+            let alert = await driver.switchTo().alert();
+            await alert.accept();
+            console.log('Alerta de mudança de senha fechado.');
+        } catch (error) {
+            console.log('Nenhum alerta de mudança de senha presente.');
+        }
+
+        // Aguardar redirecionamento para formulario.html
+        console.log('Aguardando redirecionamento para formulario.html...');
+        await driver.wait(until.urlIs('http://127.0.0.1:5500/public/formulario.html'), 5000);
+        console.log('Redirecionado para formulario.html com sucesso!');
 
         for (let i = 0; i < vezes; i++) {
+            // Adiciona uma separação clara no relatório
+            relatorio.push(`\n========== TESTE ${i + 1} ==========`);
+            relatorio.push(`Data e Hora: ${new Date().toLocaleString()}`);
+            relatorio.push('Dados preenchidos:');
+            
             console.log(`\nPreenchendo formulário ${i + 1} de ${vezes}...`);
             relatorio.push(`Formulário ${i + 1} de ${vezes}:`);
 
@@ -114,7 +168,7 @@ async function preencherFormulario(vezes, pausa) {
                 'cidade': gerarCidade(),
                 'estado': gerarEstado(),
                 'data_compra': gerarDataAleatoria(),
-                'mensagem': `Mensagem ${i}`
+                'mensagem': gerarMensagemAleatoria()
             };
 
             for (let id in campos) {
@@ -153,8 +207,8 @@ async function preencherFormulario(vezes, pausa) {
             await delay(pausa);
         }
     } catch (error) {
-        console.error('Erro ao preencher o formulário:', error);
-        relatorio.push(`Erro: ${error.message}`);
+        console.error('Erro durante a automação:', error);
+        relatorio.push(`\nErro: ${error.message}`);
     } finally {
         console.log('Finalizando automação...');
         await driver.quit();
