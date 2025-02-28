@@ -94,6 +94,7 @@ async function preencherFormulario(vezes, pausa) {
 
     const relatorio = [];
     const nomeArquivo = gerarNomeArquivo();
+    const inicioAutomacao = new Date(); // Tempo de início da automação
 
     try {
         console.log('Acessando a página do formulário...');
@@ -101,8 +102,10 @@ async function preencherFormulario(vezes, pausa) {
         console.log('Página do formulário carregada.');
 
         for (let i = 0; i < vezes; i++) {
+            const inicioFormulario = new Date(); // Tempo de início do formulário
             console.log(`\nPreenchendo formulário ${i + 1} de ${vezes}...`);
-            relatorio.push(`Formulário ${i + 1} de ${vezes}:`);
+            relatorio.push(`\n========== TESTE ${i + 1} ==========`);
+            relatorio.push(`Início: ${inicioFormulario.toLocaleString()}`);
 
             const campos = {
                 'nome_completo': gerarNomeCompleto(),
@@ -137,24 +140,38 @@ async function preencherFormulario(vezes, pausa) {
             await driver.findElement(By.css('input[type="submit"]')).click();
             console.log('Botão de enviar clicado.');
 
-            // Fechar o alerta
-            console.log('Aguardando alerta...');
-            await driver.wait(until.alertIsPresent(), 5000);
-            let alert = await driver.switchTo().alert();
-            console.log('Alerta detectado. Aceitando alerta...');
-            await alert.accept();
-            console.log('Alerta aceito.');
+            // Fechar o alerta, caso apareça
+            try {
+                await driver.wait(until.alertIsPresent(), 1000);
+                let alert = await driver.switchTo().alert();
+                await alert.accept();
+                console.log('Alerta fechado.');
+            } catch (error) {
+                console.log('Nenhum alerta presente.');
+            }
+
+            const fimFormulario = new Date(); // Tempo de fim do formulário
+            const tempoFormulario = (fimFormulario - inicioFormulario) / 1000; // Tempo em segundos
+            relatorio.push(`Fim: ${fimFormulario.toLocaleString()}`);
+            relatorio.push(`Tempo de preenchimento: ${tempoFormulario.toFixed(2)} segundos`);
 
             console.log(`Aguardando ${pausa}ms antes do próximo preenchimento...`);
             await delay(pausa);
         }
     } catch (error) {
-        console.error('Erro ao preencher o formulário:', error);
-        relatorio.push(`Erro: ${error.message}`);
+        console.error('Erro durante a automação:', error);
+        relatorio.push(`\nErro: ${error.message}`);
     } finally {
         console.log('Finalizando automação...');
         await driver.quit();
         console.log('Driver do Chrome encerrado.');
+
+        const fimAutomacao = new Date(); // Tempo de fim da automação
+        const tempoTotal = (fimAutomacao - inicioAutomacao) / 1000; // Tempo em segundos
+        relatorio.push(`\n========== RESUMO DA AUTOMAÇÃO ==========`);
+        relatorio.push(`Início: ${inicioAutomacao.toLocaleString()}`);
+        relatorio.push(`Fim: ${fimAutomacao.toLocaleString()}`);
+        relatorio.push(`Tempo total: ${tempoTotal.toFixed(2)} segundos`);
 
         // Escreve o relatório em um arquivo TXT
         fs.writeFileSync(nomeArquivo, relatorio.join('\n'));

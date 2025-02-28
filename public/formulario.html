@@ -44,7 +44,6 @@
             const result = await response.json();
 
             if (response.ok) {
-                alert('Dados inseridos com sucesso!');
                 event.target.reset(); // Limpa o formulário após envio bem-sucedido
             } else {
                 alert(result.erro || 'Erro ao inserir dados.');
